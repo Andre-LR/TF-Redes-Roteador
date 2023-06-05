@@ -17,7 +17,7 @@ public class Timer implements Runnable {
         while (true) {
             for (ElementoTabelaRoteamento elemento : tabela.getTabela().values()) {
                 if(ChronoUnit.SECONDS.between(elemento.getTimer(), LocalDateTime.now())>30){
-                    System.out.println("A neighbor router has left the network!");
+                    System.out.println("A neighbor router has left the network! [" +elemento.getDestino() +"]");
                     tabela.getTabela().remove(elemento.getDestino());  
                 } 
             }
