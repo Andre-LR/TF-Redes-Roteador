@@ -1,24 +1,28 @@
 package roteador;
 
 import java.net.InetAddress;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class TabelaRoteamento {
     /*Implemente uma estrutura de dados para manter a tabela de roteamento. 
      * A tabela deve possuir: IP Destino, Métrica e IP de Saída.
     */
 
-    private Map<String,ElementoTabelaRoteamento> tabela;
+    private ConcurrentMap<String,ElementoTabelaRoteamento> tabela;
     
-    public Map<String, ElementoTabelaRoteamento> getTabela() {
+    public ConcurrentMap<String, ElementoTabelaRoteamento> getTabela() {
         return tabela;
     }
 
     public TabelaRoteamento(List<String> listaVizinhos){
-        tabela = new HashMap<>();
+        tabela = new ConcurrentHashMap<>();
 
         //Adiciona vizinhos pré-configurados
         for (String vizinho : listaVizinhos) {
@@ -31,7 +35,6 @@ public class TabelaRoteamento {
         
         if(tabela_string.equals("!")){
             tabela.put(IPAddress.getHostAddress(),new ElementoTabelaRoteamento(IPAddress.getHostAddress(), "1", IPAddress.getHostAddress()));
-            System.out.println(tabela.toString());
             throw new InterruptedException(IPAddress.getHostAddress());  
         } 
 
@@ -41,36 +44,31 @@ public class TabelaRoteamento {
             String[] campos = elemento.split(";");
 
             ElementoTabelaRoteamento novoElemento = new ElementoTabelaRoteamento(campos[0], Integer.toString((Integer.parseInt(campos[1]) + 1)), IPAddress.getHostAddress());
-            ElementoTabelaRoteamento elementoAtual = tabela.get(novoElemento.destino);
+            ElementoTabelaRoteamento elementoAtual = tabela.get(novoElemento.getDestino());
 
-            if(novoElemento.destino.equals(Roteador.IP)) continue;     
+            if(novoElemento.getDestino().equals(Roteador.IP)) continue;     
 
             if (elementoAtual != null){
-                
-                if(Integer.parseInt(elementoAtual.metrica) >= Integer.parseInt(novoElemento.metrica)){
-                    tabela.replace(novoElemento.destino, elementoAtual, novoElemento);
+                if(Integer.parseInt(elementoAtual.getMetrica()) >= Integer.parseInt(novoElemento.getMetrica())){
+                    tabela.replace(novoElemento.getDestino(), elementoAtual, novoElemento);
+                } else {
+                    
                 }
 
             } else {
-                tabela.put(novoElemento.destino, novoElemento);    
+                tabela.put(novoElemento.getDestino(), novoElemento);    
             }
             
         }
 
-        System.out.println(tabela.toString());
-    
     }
     
     public String get_tabela_string(List<String> vizinhos){
         StringBuilder tabela_string = new StringBuilder();
 
-        if(tabela.isEmpty()){
-            tabela_string.append("!");
-        } else {
-            for (ElementoTabelaRoteamento elemento : tabela.values()) {
-                tabela_string.append("*").append(elemento.destino).append(";").append(elemento.metrica);
-            }    
-        }
+        for (ElementoTabelaRoteamento elemento : tabela.values()) {
+            tabela_string.append("*").append(elemento.getDestino()).append(";").append(elemento.getMetrica());
+        }    
 
         return tabela_string.toString();
     }

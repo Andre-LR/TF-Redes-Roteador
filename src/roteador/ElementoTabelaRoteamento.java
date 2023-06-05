@@ -1,14 +1,18 @@
 package roteador;
 
+import java.time.LocalDateTime;
+
 public class ElementoTabelaRoteamento {
-    public String destino;
-    public String metrica;
-    public String saida;
+    private String destino;
+    private String metrica;
+    private String saida;
+    private LocalDateTime timer;
 
     public ElementoTabelaRoteamento(String destino, String metrica, String saida){
         this.destino = destino;
         this.metrica = metrica;
         this.saida = saida;
+        this.timer = LocalDateTime.now();
     }
 
     public String getDestino() {
@@ -35,9 +39,18 @@ public class ElementoTabelaRoteamento {
         this.saida = saida;
     }
 
+    public LocalDateTime getTimer() {
+        return timer;
+    }
+
+    public void setTimer(LocalDateTime timer) {
+        this.timer = timer;
+    }
+
+
     @Override
     public String toString(){
-        return this.destino + "|" + this.metrica + "|" +this.saida;
+        return this.destino + " | " + this.metrica + " | " +this.saida +" | " +this.timer;
     }
 
 }

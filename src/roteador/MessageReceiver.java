@@ -6,6 +6,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,12 +49,12 @@ public class MessageReceiver implements Runnable{
 
             /* Transforma a mensagem em string */
             String tabela_string = new String( Arrays.copyOf(receivePacket.getData(),receivePacket.getLength()) , StandardCharsets.UTF_8 );
-
+            System.out.println(LocalDateTime.now()+"|RECEIVED->"+tabela_string +"|"+receivePacket.getAddress());
             
             /* Obtem o IP de saída da mensagem */
             InetAddress IPAddress = receivePacket.getAddress();
 
-            if(IPAddress.getHostAddress().equals(Roteador.IP)) continue;
+            if(IPAddress.getHostAddress().equals("127.0.0.1")) continue;
 
             try {
                 tabela.update_tabela(tabela_string, IPAddress);
