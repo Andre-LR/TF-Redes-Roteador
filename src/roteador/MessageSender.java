@@ -37,7 +37,7 @@ public class MessageSender implements Runnable{
         while(true){
             
             /* Pega a tabela de roteamento no formato string, conforme especificado pelo protocolo. */
-            String tabela_string = tabela.get_tabela_string();
+            String tabela_string = tabela.get_tabela_string(vizinhos);
                
             /* Converte string para array de bytes para envio pelo socket. */
             sendData = tabela_string.getBytes(StandardCharsets.UTF_8);
@@ -62,6 +62,13 @@ public class MessageSender implements Runnable{
                     Logger.getLogger(MessageSender.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
+
+            vizinhos.clear();
+            for (ElementoTabelaRoteamento elemento : tabela.getTabela().values()) {
+                if(elemento.metrica.equals("1")){
+                    vizinhos.add(elemento.destino);
+                }
+            }
             
             /* Espera 10 segundos antes de realizar o próximo envio. CONTUDO, caso
              * a tabela de roteamento sofra uma alteração, ela deve ser reenvida aos
@@ -70,7 +77,7 @@ public class MessageSender implements Runnable{
             try {
                 Thread.sleep(10000);
             } catch (InterruptedException ex) {
-                Logger.getLogger(MessageSender.class.getName()).log(Level.SEVERE, null, ex);
+                continue;
             }
 
         }

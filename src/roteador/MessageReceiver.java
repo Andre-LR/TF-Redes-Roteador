@@ -12,9 +12,11 @@ import java.util.logging.Logger;
 
 public class MessageReceiver implements Runnable{
     private TabelaRoteamento tabela;
+    private Thread sender;
     
-    public MessageReceiver(TabelaRoteamento t){
+    public MessageReceiver(TabelaRoteamento t, Thread s){
         tabela = t;
+        sender = s;
     }
     
     @Override
@@ -46,11 +48,21 @@ public class MessageReceiver implements Runnable{
 
             /* Transforma a mensagem em string */
             String tabela_string = new String( Arrays.copyOf(receivePacket.getData(),receivePacket.getLength()) , StandardCharsets.UTF_8 );
+
             
-            /* Obtem o IP de origem da mensagem */
+            /* Obtem o IP de saída da mensagem */
             InetAddress IPAddress = receivePacket.getAddress();
+
+            if(IPAddress.getHostAddress().equals(Roteador.IP)) continue;
+
+            try {
+                tabela.update_tabela(tabela_string, IPAddress);
+            } catch (InterruptedException ex) {
+                sender.interrupt();
+            }
             
-            tabela.update_tabela(tabela_string, IPAddress);
+
+
         }
     }
     

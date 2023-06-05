@@ -1,79 +1,73 @@
 package roteador;
 
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TabelaRoteamento {
     /*Implemente uma estrutura de dados para manter a tabela de roteamento. 
      * A tabela deve possuir: IP Destino, Métrica e IP de Saída.
     */
 
-    private List<ElementoTabela> tabela;
+    private Map<String,ElementoTabelaRoteamento> tabela;
     
+    public Map<String, ElementoTabelaRoteamento> getTabela() {
+        return tabela;
+    }
+
     public TabelaRoteamento(List<String> listaVizinhos){
-        tabela = new ArrayList<>();
+        tabela = new HashMap<>();
 
+        //Adiciona vizinhos pré-configurados
         for (String vizinho : listaVizinhos) {
-            tabela.add(new ElementoTabela(vizinho, "0", vizinho));
+            tabela.put(vizinho,new ElementoTabelaRoteamento(vizinho, "1", vizinho));
         }
 
     }
 
-    public class ElementoTabela {
-        public String destino;
-        public String metrica;
-        public String saida;
-
-        public ElementoTabela(String destino, String metrica, String saida){
-            this.destino = destino;
-            this.metrica = metrica;
-            this.saida = saida;
-        }
-
-    }
-    
-    
-    public void update_tabela(String tabela_string, InetAddress IPAddress){
-        if(tabela_string == "!") return;
+    public void update_tabela(String tabela_string, InetAddress IPAddress) throws InterruptedException{
+        
+        if(tabela_string.equals("!")){
+            tabela.put(IPAddress.getHostAddress(),new ElementoTabelaRoteamento(IPAddress.getHostAddress(), "1", IPAddress.getHostAddress()));
+            System.out.println(tabela.toString());
+            throw new InterruptedException(IPAddress.getHostAddress());  
+        } 
 
         String[] elementos = Arrays.copyOfRange(tabela_string.split("\\*"), 1, tabela_string.split("\\*").length);
-        //List<ElementoTabela> novaTabela = new ArrayList<>();
 
         for (String elemento : elementos) {
             String[] campos = elemento.split(";");
 
-            ElementoTabela novoElemento = new ElementoTabela(campos[0], campos[1], IPAddress.getHostAddress());
+            ElementoTabelaRoteamento novoElemento = new ElementoTabelaRoteamento(campos[0], Integer.toString((Integer.parseInt(campos[1]) + 1)), IPAddress.getHostAddress());
+            ElementoTabelaRoteamento elementoAtual = tabela.get(novoElemento.destino);
 
-            if (tabela.stream().anyMatch( e -> e.destino.equals(novoElemento.destino))){
-                
-                ElementoTabela elementoAtual = tabela.stream().filter(e -> e.destino.equals(novoElemento.destino)).findFirst().get();
+            if(novoElemento.destino.equals(Roteador.IP)) continue;     
+
+            if (elementoAtual != null){
                 
                 if(Integer.parseInt(elementoAtual.metrica) >= Integer.parseInt(novoElemento.metrica)){
-                    tabela.remove(elementoAtual);
-                    tabela.add(novoElemento);
+                    tabela.replace(novoElemento.destino, elementoAtual, novoElemento);
                 }
 
             } else {
-                novoElemento.metrica = Integer.toString((Integer.parseInt(campos[1]) + 1));
-                tabela.add(novoElemento);    
+                tabela.put(novoElemento.destino, novoElemento);    
             }
             
         }
 
-        //this.tabela = novaTabela;
-        System.out.println(get_tabela_string());
+        System.out.println(tabela.toString());
     
     }
     
-    public String get_tabela_string(){
+    public String get_tabela_string(List<String> vizinhos){
         StringBuilder tabela_string = new StringBuilder();
 
         if(tabela.isEmpty()){
             tabela_string.append("!");
         } else {
-            for (ElementoTabela elemento : tabela) {
+            for (ElementoTabelaRoteamento elemento : tabela.values()) {
                 tabela_string.append("*").append(elemento.destino).append(";").append(elemento.metrica);
             }    
         }
