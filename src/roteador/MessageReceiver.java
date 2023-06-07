@@ -49,7 +49,7 @@ public class MessageReceiver implements Runnable{
 
             /* Transforma a mensagem em string */
             String tabela_string = new String( Arrays.copyOf(receivePacket.getData(),receivePacket.getLength()) , StandardCharsets.UTF_8 );
-            System.out.println(LocalDateTime.now()+"|RECEIVED->"+tabela_string +"|"+receivePacket.getAddress());
+            System.out.println(tabela.tabelaString("RECEBER",receivePacket.getAddress().getHostAddress()));
             
             /* Obtem o IP de saída da mensagem */
             InetAddress IPAddress = receivePacket.getAddress();
@@ -57,7 +57,7 @@ public class MessageReceiver implements Runnable{
             if(IPAddress.getHostAddress().equals("127.0.0.1")) continue;
 
             try {
-                tabela.update_tabela(tabela_string, IPAddress);
+                tabela.atualizarTabela(tabela_string, IPAddress);
             } catch (InterruptedException ex) {
                 sender.interrupt();
             }

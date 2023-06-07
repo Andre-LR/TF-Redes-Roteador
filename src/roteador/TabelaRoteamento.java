@@ -2,11 +2,8 @@ package roteador;
 
 import java.net.InetAddress;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -31,7 +28,16 @@ public class TabelaRoteamento {
 
     }
 
-    public void update_tabela(String tabela_string, InetAddress IPAddress) throws InterruptedException{
+    public void atualizarTabela(String tabela_string, InetAddress IPAddress) throws InterruptedException{
+
+        ElementoTabelaRoteamento roteadorEnviador = tabela.get(IPAddress.getHostAddress());
+        
+        if(roteadorEnviador != null){
+            roteadorEnviador.setTimer(LocalDateTime.now());
+        } else {
+            tabela.put(IPAddress.getHostAddress(), new ElementoTabelaRoteamento(IPAddress.getHostAddress(), "1", IPAddress.getHostAddress()));
+        }
+
         
         if(tabela_string.equals("!")){
             tabela.put(IPAddress.getHostAddress(),new ElementoTabelaRoteamento(IPAddress.getHostAddress(), "1", IPAddress.getHostAddress()));
@@ -63,16 +69,48 @@ public class TabelaRoteamento {
 
     }
     
-    public String get_tabela_string(List<String> vizinhos){
-        StringBuilder tabela_string = new StringBuilder();
+    public String tabelaProtocolo(List<String> vizinhos){
+        StringBuilder tabelaProtocolo = new StringBuilder();
 
         for (ElementoTabelaRoteamento elemento : tabela.values()) {
-            tabela_string.append("*").append(elemento.getDestino()).append(";").append(elemento.getMetrica());
+            tabelaProtocolo.append("*").append(elemento.getDestino()).append(";").append(elemento.getMetrica());
         }    
 
-        return tabela_string.toString();
+        return tabelaProtocolo.toString();
     }
     
+    public String tabelaString(String tipo, String ip){
 
+        StringBuilder tabelaString = new StringBuilder();
+        
+        tabelaString.append("*-----------------------------------------------*\n");
+        tabelaString.append("|       "+alinharString(tipo, 8)+"        |    "+alinharString(ip, 8)+"     |\n");
+        tabelaString.append("*-----------------------------------------------*\n");
+        tabelaString.append("|      DESTINO     | MÉTRICA |      SAÍDA       |\n");
+
+        for (ElementoTabelaRoteamento elemento : tabela.values()) {
+            tabelaString.append("|"+alinharString(elemento.getDestino(), 18) + "|" + alinharString(elemento.getMetrica(),9) + "|" +alinharString(elemento.getSaida(),18)+"|\n");
+        }
+
+        tabelaString.append("*-----------------------------------------------*\n");
+
+        return tabelaString.toString();
+
+    }
+
+    private String alinharString(String s, int size) {
+        if (s == null || size <= s.length())
+            return s;
+
+        StringBuilder sb = new StringBuilder(size);
+        for (int i = 0; i < (size - s.length()) / 2; i++) {
+            sb.append(' ');
+        }
+        sb.append(s);
+        while (sb.length() < size) {
+            sb.append(' ');
+        }
+        return sb.toString();
+    }
     
 }

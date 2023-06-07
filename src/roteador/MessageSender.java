@@ -7,7 +7,6 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,7 +38,7 @@ public class MessageSender implements Runnable{
         while(true){
             
             /* Pega a tabela de roteamento no formato string, conforme especificado pelo protocolo. */
-            String tabela_string = tabela.get_tabela_string(vizinhos);
+            String tabela_string = tabela.tabelaProtocolo(vizinhos);
             if(first){
                 tabela_string = "!";
                 first = false;
@@ -59,7 +58,7 @@ public class MessageSender implements Runnable{
                 }
                 
                 /* Configura pacote para envio da menssagem para o roteador vizinho na porta 5000*/
-                System.out.println(LocalDateTime.now() +"|SENT->"+tabela_string+"|"+IPAddress.getHostAddress());
+                System.out.println(tabela.tabelaString("ENVIAR",IPAddress.getHostAddress()));
                 DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, 5000);         
                 
                 /* Realiza envio da mensagem. */
